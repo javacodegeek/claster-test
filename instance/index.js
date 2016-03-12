@@ -13,5 +13,24 @@ module.exports = class {
         let serverId = md5 (timestamp);
             return serverId;
     }
+
+    getMessage(){
+        this.cnt = this.cnt || 0;
+            return this.cnt++;
+    }
+
+    eventHandler(msg, callback){
+        function onComplete(){
+            let error = Math.random() > 0.85; callback(error, msg);
+        }
+
+        setTimeout(onComplete, Math.floor(Math.random()*1000));
+    }
+
+
+
+
+
+
 }
 
