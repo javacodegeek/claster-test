@@ -11,15 +11,23 @@ client.on("error", function (err) {
 let serverInstance = new Instance(1);
 
 let timerMessage = setInterval(function() {
-    serverInstance.getMessage();
-    let message = { "serverId": serverInstance.serverId,
+
+    let messageBody = { "serverId": serverInstance.serverId,
                     "timestamp": new Date().getTime().toString(),
                     "body": serverInstance.getMessage().toString(),
                     "status": "0",
                     "error": "0"
                   };
 
-    console.log(message);
+    let messageKey = "messageKey-" + serverInstance.serverId + '-' + new Date().getTime();
+
+    client.HMSET(messageKey, messageBody, function(err, res){
+        console.log(err);
+    });
+
 }, config.messageDelay);
+
+
+
 
 console.log(serverInstance);
