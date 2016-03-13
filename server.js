@@ -11,7 +11,15 @@ client.on("error", function (err) {
 let serverInstance = new Instance(1);
 
 let timerMessage = setInterval(function() {
-    console.log(serverInstance.getMessage());
+    serverInstance.getMessage();
+    let message = { "serverId": serverInstance.serverId,
+                    "timestamp": new Date().getTime().toString(),
+                    "body": serverInstance.getMessage().toString(),
+                    "status": "0",
+                    "error": "0"
+                  };
+
+    console.log(message);
 }, config.messageDelay);
 
 console.log(serverInstance);
