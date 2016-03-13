@@ -1,9 +1,10 @@
 'use strict';
 
+const config = require('config');
+const Instance = require('./instance');
 
-const Instance = require('./instance')
 
-let serverInstance = new Instance;
+let serverInstance = new Instance();
 
 
 console.log(serverInstance);

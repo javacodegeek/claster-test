@@ -1,4 +1,6 @@
 'use strict';
+
+const config = require('config');
 const md5 = require('md5')
 
 module.exports = class {
@@ -10,7 +12,7 @@ module.exports = class {
 
     generateServerId(){
         let timestamp = new Date().getTime();
-        let serverId = md5 (timestamp);
+        let serverId = md5 (timestamp + config.secretKey);
             return serverId;
     }
 
@@ -26,11 +28,6 @@ module.exports = class {
 
         setTimeout(onComplete, Math.floor(Math.random()*1000));
     }
-
-
-
-
-
 
 }
 
