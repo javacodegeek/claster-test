@@ -12,15 +12,16 @@ module.exports = class {
     constructor(type){
         this.startAt = new Date().getTime();
         this.serverId = this.generateServerId();
+
         switch (type) {
             case 1:
-                this.serverId = 1;
+                this.serverType = 1;
                 break;
             case 2:
-                this.serverId = 2;
+                this.serverType = 2;
                 break;
             default:
-                this.serverId = 2;
+                this.serverType = 2;
                 break;
         }
 
