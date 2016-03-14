@@ -1,4 +1,4 @@
 {
-    "messageDelay": 5000,
+    "messageDelay": 50,
     "secretKey": "TESTKEY"
 }
