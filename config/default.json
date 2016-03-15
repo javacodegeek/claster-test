@@ -1,5 +1,5 @@
 {
-    "messageDelay": 500,
+    "messageDelay": 2000,
     "secretKey": "TESTKEY",
-    "maxCountMessage": 1000
+    "waitingForGenerator": 10000
 }
