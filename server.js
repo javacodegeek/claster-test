@@ -51,11 +51,15 @@ function handlePackageMsg(){
             client.hgetall("generator-info", function (err, res) {
                 if (!err) {
                     if(((new Date().getTime()) - res.lastMsgtimestamp) > config.waitingForGenerator){
-                        serverInstance.defineAsGenerator();
+                        if(new Date().getTime() - res.timestamp > config.waitingForGenerator){
+                            client.hset("generator-info", "timestamp", new Date().getTime().toString(), function(err, res){
+                                serverInstance.defineAsGenerator();
+                            });
+                        }
+
                         generateMsgs();
                         callback(true);
                     }
-
                     callback(null);
                 } else {
                     callback(true);
