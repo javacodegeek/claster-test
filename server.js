@@ -3,10 +3,9 @@
 const config = require('config');
 const Instance = require('./instance');
 const async = require('async');
-const await = require('await');
 const redis = require("redis");
 
-let argv = require('minimist')(process.argv.slice(2));
+let argv = require('minimist')(process.argv.slice(1));
 
 let client = redis.createClient();
 
@@ -38,97 +37,70 @@ if(serverInstance.isGenerator()){
         }
     });
 }else {
-
-    async.waterfall([
-        function(callback) {
-            client.keys("messageKey*", function (err, replies) {
-                if(!err){
-                    console.log(replies);
-                    callback(null, replies);
-                }else{
-                    callback(true);
-                }
-            });
-        },
-        function(replies, callback) {
-            for (let hkey of replies) {
-                let new_hkey = "lock-" + hkey;
-                client.rename(hkey, new_hkey, function (err, res) {
-                    if(!err){
-                        callback(null, new_hkey);
+    function handlePackageMsg(){
+        async.waterfall([
+            function (callback) {
+                client.keys("messageKey*", function (err, replies) {
+                    if (!err) {
+                        callback(null, replies);
+                    } else {
+                        callback(true);
                     }
                 });
-            }
-            callback(true);
-        },
-        function(new_hkey, callback){
-            client.hgetall(new_hkey, function (err, res) {
-                let message = res;
-                console.log(message);
-                if (!err) {
-                    callback(null, message, new_hkey);
-                }else{
-                    console.log(true);
-                }
-            });
-        },
-        function(message,new_hkey, callback){
-            serverInstance.eventHandler(message, function (err, msg) {
-                if (!err){
-                    callback(null, new_hkey, "error-" + new_hkey);
-                }else {
-                    callback(null, new_hkey, "success-" + new_hkey);
-                }
-            });
-        },
-        function(new_hkey, res_new_hkey, callback){
-            client.rename(new_hkey, res_new_hkey, function (err, res) {
-                if(!err){
-                    callback(null, res)
-                }else{
-                    callback(true);
-                }
-            });
-
-        }
-    ], function (err, result) {
-         console.log(err);
-         console.log(result);
-
-    });
-
-
-
-
-
-
-
-/*
-    client.keys("messageKey*", function (err, replies) {
-        let hkeysList = replies;
-        for (let hkey of hkeysList) {
-            let new_hkey = "lock-" + hkey;
-            client.rename(hkey, new_hkey, function (err, res) {
-                if (!err) {
-                    client.hgetall(new_hkey, function (err, res) {
-                        let message = res.body;
-                        console.log(message);
+            },
+            function (replies, callback) {
+                for (let hkey of replies) {
+                    let new_hkey = "lock-" + hkey;
+                    client.rename(hkey, new_hkey, function (err, res) {
                         if (!err) {
-                            serverInstance.eventHandler(message, function (err, msg) {
-                                if (!err){
-                                    let err_new_hkey = "error-" + new_hkey;
-                                    client.rename(new_hkey, err_new_hkey, function (err, res) {});
-                                }else {
-                                    let suc_new_hkey = "success-" + new_hkey;
-                                    client.rename(new_hkey, suc_new_hkey, function (err, res) {});
-                                }
-                            });
+                            callback(null, new_hkey);
                         }
                     });
                 }
-            });
-        }
-    });*/
+                callback(true);
+            },
+            function (new_hkey, callback) {
+                client.hgetall(new_hkey, function (err, res) {
+                    let message = res;
+                    if (!err) {
+                        callback(null, message, new_hkey);
+                    } else {
+                        console.log(true);
+                    }
+                });
+            },
+            function (message, new_hkey, callback) {
+                serverInstance.eventHandler(message, function (err, msg) {
+                    console.log(msg.body);
+                    if (!err) {
+                        callback(null, new_hkey, "success-" + new_hkey);
+                    } else {
+                        callback(null, new_hkey, "error-" + new_hkey);
+                    }
+                });
+            },
+            function (new_hkey, res_new_hkey, callback) {
+                client.rename(new_hkey, res_new_hkey, function (err, res) {
+                    if (!err) {
+                        callback(null, res)
+                    } else {
+                        callback(true);
+                    }
+                });
+
+            },
+
+        ], function (err, result) {
+            handlePackageMsg();
+        });
+    };
+
+
+    handlePackageMsg();
+
+
+
+
 
 }
 
