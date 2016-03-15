@@ -4,15 +4,14 @@ const config = require('config');
 const Instance = require('./instance');
 const async = require('async');
 const redis = require("redis");
-let argv = require('minimist')(process.argv.slice(1));
-
+let argv = require('minimist')(process.argv.slice(2));
 let client = redis.createClient();
 
 client.on("error", function (err) {
     console.log("Error " + err);
 });
 
-let serverInstance = new Instance(2);
+let serverInstance = new Instance(argv.t);
 
 
 function generateMsgs() {
@@ -119,11 +118,52 @@ function handlePackageMsg(){
 };
 
 
-if(serverInstance.isGenerator()){
-    generateMsgs();
-}else {
-    handlePackageMsg();
+function getErrors(){
+    async.waterfall([
+        function (callback) {
+            client.keys("error*", function (err, replies) {
+                if (!err) {
+                    callback(null, replies);
+                } else {
+                    callback(true);
+                }
+            });
+        },
+        function (replies, callback) {
+            for (let hkey of replies) {
+                client.hgetall(hkey, function (err, res) {
+                    console.log(res);
+                    if (!err) {
+                        callback(null, hkey);
+                    } else {
+                        console.log(true);
+                    }
+                });
+            }
+        },
+        function (hkey, callback){
+            client.del(hkey, function(err, res){
+                if(!err){
+                    callback(null);
+                }else{
+                    callback(false);
+                }
+            });
+        }
+    ], function (err, result) {
 
+    });
 }
 
-console.log(serverInstance);
+
+if (argv.getErrors == true){
+    getErrors();
+}else{
+    if(serverInstance.isGenerator()){
+        generateMsgs();
+    }else {
+        handlePackageMsg();
+    }
+    console.log(serverInstance);
+}
+
